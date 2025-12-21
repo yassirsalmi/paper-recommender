@@ -18,7 +18,7 @@ class ResearchAgent():
     def run(self, user_query: str) -> str:
         """
         Generate plan with up to 3 retries
-        the 3rd attempt continue the execution even when 
+        the 3rd attempt continue the execution even when the judge LLM give a weak score
         """
         max_attempts = 3
         plan = None
