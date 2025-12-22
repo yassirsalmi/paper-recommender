@@ -1,9 +1,10 @@
 import os
 from dotenv import load_dotenv
 from llm.llm import LLM
-from tools.tools import fetch_articles_from_hf, fetch_articles_from_arxiv, rank_papers, summarize_papers
+from tools.tools import rank_papers, summarize_papers
 from utils.logger import get_logger
 from agent.research_agent import ResearchAgent
+from tools.search_tools.hugging_face_search import HuggingFaceSearch
 
 
 def main():
@@ -16,8 +17,10 @@ def main():
         temperature=os.getenv("LLM_TEMPERATURE")
     )
 
+    paper_search_tool = HuggingFaceSearch()
+
     tools = {
-        "paper_search": fetch_articles_from_hf,
+        "paper_search": paper_search_tool,
         "paper_ranker": rank_papers,
         "paper_summarizer": summarize_papers,
     }
