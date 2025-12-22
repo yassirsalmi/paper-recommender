@@ -1,76 +1,13 @@
 from datetime import date, timedelta
 from itertools import islice
+from typing import List
 from langchain.tools import tool
 from huggingface_hub import list_daily_papers
+from semanticscholar import SemanticScholar
 import arxiv
 
-# other sources for tools search semanticscholar, PubMed
+# TODO: start creating a separate tool file for each category of tools
 # TODO: tools to implement paper search, papers ranker, papers summarization tool
-
-LIMIT: int = 10
-DURATION: int = 7
-
-@tool(
-        "fetch_articles_from_huggingface_hub", 
-        description="Fetch articles from Hugging Face")
-def fetch_articles_from_hf(limit: int = LIMIT):
-    """
-    Fetch daily papers from Hugging Face Hub.
-    
-    - limit: number of papers to fetch
-    """
-    try:
-        if limit <= 0:
-            raise ValueError("limit must be > 0")
-
-        target_date = (date.today() - timedelta(days=7)).isoformat()
-        papers = list_daily_papers(date=target_date)
-        
-        results = []
-        for paper in islice(papers, limit):
-            results.append({
-                "title": paper.title,
-                "authors": paper.authors,
-                "summary": paper.summary,
-            })
-        
-        return results
-
-    except Exception as e:
-        raise RuntimeError(f"Failed to fetch HF daily papers: {str(e)}") from e
-    
-@tool(
-        "fetch_articles_from_arxiv", 
-        description="Fetch articles from arxiv")
-def fetch_articles_from_arxiv(limit: int = LIMIT):
-    """
-    Fetch papers from arxiv 
-
-    - limit: number of papers to fetch
-    """
-    try:
-        if limit < 0:
-            raise ValueError("limit must be > 0")
-        
-        client = arxiv.Client()
-        search = arxiv.Search(
-            query="",
-            max_results = limit,
-            sort_by = arxiv.SortCrterion.SubmittedDate,
-        )
-        results = client.results(search)
-
-        papers = []
-        for result in results:
-            papers.append({
-                "title": result.title,
-                "authors": result.authors,
-                "summary": result.summary,
-            })
-        return papers
-
-    except Exception as e:
-        raise RuntimeError(f"Failed to fetch papers from arxiv: {str(e)}") from e
     
 @tool(
         "paper_ranker",
