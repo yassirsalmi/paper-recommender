@@ -2,6 +2,7 @@ from typing import Dict, List, Any
 import json
 from utils.helpers import extract_json_from_markdown
 from utils.prompt_template import func_judgemental_prompt, func_planning_prompt, func_synthesis_prompt
+from agent.plan import Plan
 
 class ResearchAgent():
     """
@@ -24,9 +25,11 @@ class ResearchAgent():
         plan = None
         judge_result = -1
         
-        for attempt in range(1, max_attempts + 1):
-            
+        for attempt in range(1, max_attempts + 1):  
             plan = self.plan(user_query=user_query, tools=self.tools)
+
+            # validation before judge
+            # plan = Plan.model_validate_json(str(plan))
 
             judge_result = self.judge_generated_plan(
                 user_query=user_query, 
@@ -86,24 +89,33 @@ class ResearchAgent():
         return score
 
     def execute(self, plan: Dict[str, Any]) -> Dict[str, Any]:
+        # TODO: tool calls are hardcoded in here need to find a better way to do it
         state = {}
 
         for step in plan["steps"]:
             tool_name = step["tool"]
+            action = step["action"]
+
+            if tool_name not in self.tools:
+                raise KeyError(f"Unknown tool: {tool_name}")
+
             tool = self.tools[tool_name]
 
-            if step["action"] == "search":
+            if action == "search":
                 state["papers"] = tool.invoke(step.get("args", {}))
 
-            elif step["action"] == "rank":
-                state["ranked_papers"] = tool.invoke({
-                    "papers": state["papers"]
-                })
+            elif action == "rank":
+                if "papers" not in state:
+                    raise RuntimeError("Cannot rank without papers")
+                state["ranked_papers"] = tool.invoke({"papers": state["papers"]})
 
-            elif step["action"] == "summarize":
-                state["summaries"] = tool.invoke({
-                    "papers": state["ranked_papers"]
-                })
+            elif action == "summarize":
+                if "ranked_papers" not in state:
+                    raise RuntimeError("Cannot summarize without ranked papers")
+                state["summaries"] = tool.invoke({"papers": state["ranked_papers"]})
+
+            else:
+                raise ValueError(f"Unknown action: {action}")
 
         return state
 
