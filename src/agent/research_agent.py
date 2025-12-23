@@ -1,7 +1,7 @@
 from typing import Dict, List, Any
 import json
 from utils.helpers import extract_json_from_markdown
-
+from utils.prompt_template import func_judgemental_prompt, func_planning_prompt, func_synthesis_prompt
 
 class ResearchAgent():
     """
@@ -54,32 +54,9 @@ class ResearchAgent():
     def plan(self, user_query: str, tools: Dict[str, Any]) -> Dict[str, Any]:
         tools_list = ", ".join(tools.keys())
 
-        planning_prompt = f"""
-        You are a research planning agent. Your role is to produce a step-by-step plan
-        to answer the user's query as effectively as possible.
-
-        User query:
-        "{user_query}"
-
-        Available tools:
-        {tools_list}
-
-        Instructions:
-        - Return JSON only.
-        - And the JSON returned must follow this schema exactly:
-        {{
-            "steps": [
-                {{"action": "action_name_1", "tool": "tool_name_1", "args": {{}}}},
-                {{"action": "action_name_2", "tool": "tool_name_2", "args": {{}}}},
-                {{"action": "action_name_3", "tool": "tool_name_3", "args": {{}}}}
-            ]
-        }}
-
-        - Do NOT include any explanation, markdown, or extra text.
-        - Only return JSON; it must be valid and complete.
-
-        Remember: the steps should be ordered to produce the best research results.
-        """
+        planning_prompt = func_planning_prompt(user_query=user_query,
+                                               tools_list=tools_list)
+        
         ai_message = self.llm.invoke(planning_prompt)
         plan_text = ai_message.content.strip()
 
@@ -94,21 +71,9 @@ class ResearchAgent():
     def judge_generated_plan(self, user_query: str, tools: Dict[str, Any], plan: Dict[str, Any]) -> float:
         available_tools = ", ".join(tools.keys())
 
-        judgemental_prompt = f"""
-        you are a judge LLM and you role is to give your feedback on a plan generated 
-        to resolve a user query while using the provided tools
-
-        User query:
-        "{user_query}"
-
-        Tools:
-        "{available_tools}"
-
-        Plan:
-        "{plan}"
-
-        please provide your feedback on a scale for 0 to 10 don't add anything else to you output.
-        """
+        judgemental_prompt = func_judgemental_prompt(user_query=user_query,
+                           available_tools=available_tools,
+                           plan=plan)
 
         judge_message = self.llm.invoke(judgemental_prompt)
         score_text = judge_message.content.strip()
@@ -148,18 +113,9 @@ class ResearchAgent():
         combine the user_query with the tool results into the final response
         """
 
-        synthesis_prompt = f"""
-        You are a research assistant.
-
-        User query:
-        "{user_query}"
-
-        Here are the research findings:
-        {intermediate_results}
-
-        Provide a concise list of recommended papers and
-        explain why each is relevant.
-        """
+        synthesis_prompt = func_synthesis_prompt(user_query=user_query,
+                                                 intermediate_results=intermediate_results)
+        
 
         final_response = self.llm.invoke(synthesis_prompt)
 
