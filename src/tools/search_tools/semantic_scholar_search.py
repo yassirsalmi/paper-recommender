@@ -12,7 +12,7 @@ class SemanticScholarSearch(SearchTool):
     description: ClassVar[str] = "Fetches recent papers from SemanticScholar"
     args_schema: ClassVar[Type[BaseModel]] = SemanticScholarSearchArgs
 
-    def run(self, keywords: List[str], limit: int = 10):
+    def _run(self, keywords: List[str], limit: int = 10):
         sch = SemanticScholar()
         results = []
 
