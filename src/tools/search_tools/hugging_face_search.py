@@ -24,6 +24,7 @@ class HuggingFaceSearch(SearchTool):
                 "title": paper.title,
                 "authors": paper.authors,
                 "summary": paper.summary,
+                "upvote": paper.upvotes,
             }
             for paper in islice(papers, limit)
         ]
