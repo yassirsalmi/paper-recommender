@@ -20,5 +20,6 @@ class RankTool(BaseTool):
     description: ClassVar[str] = "A tool used when we want to rank the retrieved research papers by the number of upvotes"
     args_schema: ClassVar[Type[BaseModel]] = RankToolArgs
 
-    def _run(self, papers, threshold):
+    def _run(self, papers, threshold=None):
+        threshold = threshold or 75
         return [paper for paper in papers if paper.get("upvote", "") > threshold]
