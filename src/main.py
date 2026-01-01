@@ -1,10 +1,12 @@
 import os
 from dotenv import load_dotenv
 from llm.llm import LLM
-from tools.tools import rank_papers, summarize_papers
+from tools.tools import  summarize_papers
 from utils.logger import get_logger
 from agent.research_agent import ResearchAgent
 from tools.search_tools.hugging_face_search import HuggingFaceSearch
+from tools.rank_tools.rank_tool import RankTool
+from tools.rank_tools.relevance_tool import RelevanceTool
 
 
 def main():
@@ -18,10 +20,13 @@ def main():
     )
 
     paper_search_tool = HuggingFaceSearch()
+    paper_relevance_tool = RelevanceTool(llm=llm)
+    paper_rank_tool = RankTool()
 
     tools = {
         "paper_search": paper_search_tool,
-        "paper_ranker": rank_papers,
+        "paper_relevance": paper_relevance_tool,
+        "paper_ranker": paper_rank_tool,
         "paper_summarizer": summarize_papers,
     }
 
@@ -30,9 +35,9 @@ def main():
         tools=tools
     )
 
-    request = "can you please check for me the latest research papers about LLM inference optimization"
+    user_request = input("your request: ")
     result = agent.run(
-        request
+        user_request
     )
 
     print(result.content)
