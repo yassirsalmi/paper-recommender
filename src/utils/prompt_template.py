@@ -20,8 +20,9 @@ please provide your feedback on a scale for 0 to 10 don't add anything else to y
 
 def func_planning_prompt(user_query, tools_list):
     return f"""
-You are a research planning agent. Your role is to produce a step-by-step plan
-to answer the user's query as effectively as possible.
+You are a research planning agent.
+
+Your task is to produce a step-by-step plan to answer the user's query.
 
 User query:
 "{user_query}"
@@ -29,9 +30,17 @@ User query:
 Available tools:
 {tools_list}
 
-Instructions:
+MANDATORY RULES:
+1. The plan MUST start with "paper_search".
+2. The plan MUST include "paper_relevance" immediately AFTER "paper_search".
+3. The plan MUST NOT include "paper_ranker" or "paper_summarizer" BEFORE "paper_relevance".
+4. Any plan that does not include "paper_relevance" is INVALID.
+5. Use each tool at most once.
+6. Steps must be in a logical execution order.
+
+OUTPUT FORMAT:
 - Return JSON only.
-- And the JSON returned must follow this schema exactly:
+- The JSON must follow this schema exactly:
 {{
     "steps": [
         {{"action": "action_name_1", "tool": "tool_name_1", "args": {{}}}},
@@ -40,10 +49,10 @@ Instructions:
     ]
 }}
 
-- Do NOT include any explanation, markdown, or extra text.
-- Only return JSON; it must be valid and complete.
-
-Remember: the steps should be ordered to produce the best research results.
+IMPORTANT:
+- Do NOT include explanations.
+- Do NOT include markdown.
+- Return ONLY valid JSON.
 """
 
 

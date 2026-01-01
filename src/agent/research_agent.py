@@ -42,7 +42,7 @@ class ResearchAgent():
                     print(f"Final attempt - executing plan despite low score ({judge_result})")
                 break
         
-        intermediate_results = self.execute(plan=plan)
+        intermediate_results = self.execute(plan=plan, user_query= user_query)
 
         response = self.synthesize(
             user_query=user_query, 
@@ -88,8 +88,9 @@ class ResearchAgent():
 
         return score
 
-    def execute(self, plan: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, plan: Dict[str, Any], user_query: str) -> Dict[str, Any]:
         # TODO: tool calls are hardcoded in here need to find a better way to do it
+        #! need to clean up this and do this in a better way since a lot of errors raises
         state = {}
 
         for step in plan["steps"]:
@@ -101,15 +102,32 @@ class ResearchAgent():
 
             tool = self.tools[tool_name]
 
-            if action == "search":
+            if "search" in action:
                 state["papers"] = tool.invoke(step.get("args", {}))
-
-            elif action == "rank":
-                if "papers" not in state:
+            
+            elif "rank" in action:
+                papers_to_rank = state.get("ranked_relevant_papers", state.get("papers"))
+                if papers_to_rank is None:
                     raise RuntimeError("Cannot rank without papers")
-                state["ranked_papers"] = tool.invoke({"papers": state["papers"]})
+                state["ranked_papers"] = tool.invoke({"papers": papers_to_rank, "threshold": 75})
 
-            elif action == "summarize":
+            elif tool_name == "paper_relevance":
+                if "papers" not in state:
+                    raise RuntimeError("Cannot filter relevance without papers")
+
+                summaries = [paper["summary"] for paper in state["papers"]]
+
+                relevance_decisions = tool.invoke({
+                    "user_query": user_query,
+                    "summaries": summaries
+                })
+
+                state["ranked_relevant_papers"] = [
+                    paper for paper, decision in zip(state["papers"], relevance_decisions)
+                    if str(decision[0] if isinstance(decision, tuple) else decision).lower() == "yes"
+                ]
+
+            elif "summarize" in action:
                 if "ranked_papers" not in state:
                     raise RuntimeError("Cannot summarize without ranked papers")
                 state["summaries"] = tool.invoke({"papers": state["ranked_papers"]})
