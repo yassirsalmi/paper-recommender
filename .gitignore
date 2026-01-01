@@ -9,3 +9,6 @@ venv/
 .DS_Store
 
 .env
+
+# test cache
+.pytest_cache
