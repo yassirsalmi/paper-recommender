@@ -1,4 +1,4 @@
-from typing import ClassVar, Type
+from typing import ClassVar, Type, Dict, Any
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 
@@ -7,5 +7,5 @@ class SearchTool(BaseTool):
     description: ClassVar[str]  = "A search tool"
     args_schema: ClassVar[Type[BaseModel]] = Field()
 
-    def _run(self, **kwargs):
+    def _run(self, **kwargs)  -> Dict[str, Any]:
         raise NotImplementedError

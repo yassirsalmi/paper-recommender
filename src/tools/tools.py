@@ -17,7 +17,8 @@ def summarize_papers(papers):
     Output:
     - list of short human-readable summaries
     """
-    return [
-        f"{p['title']}: relevant because {p['summary'][:50]}..."
-        for p in papers
-    ]
+    return {
+        "summaries": [
+                f"{p['title']}: relevant because {p['summary'][:50]}..." for p in papers
+            ]
+    }

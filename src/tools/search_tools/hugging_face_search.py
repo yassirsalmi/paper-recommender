@@ -19,12 +19,14 @@ class HuggingFaceSearch(SearchTool):
         target_date = (date.today() - timedelta(days=7)).isoformat()
         papers = list_daily_papers(date=target_date)
 
-        return [
-            {
-                "title": paper.title,
-                "authors": paper.authors,
-                "summary": paper.summary,
-                "upvote": paper.upvotes,
-            }
-            for paper in islice(papers, limit)
-        ]
+        return {
+            "papers": [
+                {
+                    "title": paper.title,
+                    "authors": paper.authors,
+                    "summary": paper.summary,
+                    "upvote": paper.upvotes,
+                }
+                for paper in islice(papers, limit)
+            ]
+        }

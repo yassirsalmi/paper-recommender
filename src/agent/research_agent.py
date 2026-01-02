@@ -1,6 +1,6 @@
 from typing import Dict, List, Any
 import json
-from utils.helpers import extract_json_from_markdown
+from utils.helpers import extract_json_from_markdown, resolve_args, validate_required_args
 from utils.prompt_template import func_judgemental_prompt, func_planning_prompt, func_synthesis_prompt
 from agent.plan import Plan
 
@@ -88,7 +88,7 @@ class ResearchAgent():
 
         return score
 
-    def execute(self, plan: Dict[str, Any], user_query: str) -> Dict[str, Any]:
+    def _execute(self, plan: Dict[str, Any], user_query: str) -> Dict[str, Any]:
         # TODO: tool calls are hardcoded in here need to find a better way to do it
         #! need to clean up this and do this in a better way since a lot of errors raises
         state = {}
@@ -134,6 +134,33 @@ class ResearchAgent():
 
             else:
                 raise ValueError(f"Unknown action: {action}")
+
+        return state
+
+    def execute(self, plan: Dict[str, Any], user_query: str) -> Dict[str, Any]:
+        state = {"user_query": user_query}
+
+        for step in plan["steps"]:
+            action_name = step["action"]
+            tool_name = step["tool"]
+
+            if tool_name not in self.tools:
+                raise KeyError(f"Unknown tool: {tool_name}")
+
+            tool = self.tools[tool_name]
+
+            raw_args = step.get("args", {})
+            resolved_args = resolve_args(raw_args, state)
+            validate_required_args(tool, resolved_args)
+            tool_output = tool.invoke(resolved_args)
+
+
+            if not isinstance(tool_output, dict):
+                raise TypeError(
+                    f"Tool {tool_name} must return a dict, got {type(tool_output)}"
+                )
+
+            state.update(tool_output)
 
         return state
 
