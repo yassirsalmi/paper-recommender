@@ -30,6 +30,25 @@ User query:
 Available tools:
 {tools_list}
 
+TOOLS AND REQUIRED ARGUMENTS:
+
+paper_search:
+- args:
+  - limit (int, optional)
+
+paper_relevance:
+- args:
+  - user_query (string) → use "$user_query"
+  - papers (list) → use "$papers"
+
+paper_ranker:
+- args:
+  - papers (list) → use "$relevant_papers"
+
+paper_summarizer:
+- args:
+  - papers (list) → use "$ranked_papers"
+
 MANDATORY RULES:
 1. The plan MUST start with "paper_search".
 2. The plan MUST include "paper_relevance" immediately AFTER "paper_search".
