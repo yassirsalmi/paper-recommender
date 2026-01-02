@@ -23,9 +23,11 @@ def test_agent_happy_path():
     ]
 
     search_tool = MagicMock()
-    search_tool.invoke.return_value = [
-        {"title": "Paper 1", "summary": "ML paper"}
-    ]
+    search_tool.invoke.return_value = {
+        "papers": [
+            {"title": "Paper 1", "summary": "ML paper"}
+        ]
+    }
 
     tools = {
         "search": search_tool

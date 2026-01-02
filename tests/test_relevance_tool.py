@@ -5,30 +5,43 @@ from tools.rank_tools.relevance_tool import RelevanceTool
 
 def test_relevance_tool_returns_llm_output():
     llm = MagicMock(spec=LLM)
-    llm.invoke.return_value = "['yes', 'no']"
+    llm.invoke.return_value = MagicMock(content="['yes', 'no']")
 
     tool = RelevanceTool(llm=llm)
 
     result = tool.run({
         "user_query": "machine learning",
-        "summaries": [
-            "Paper about GNNs",
-            "Paper about medical things"
+        "papers": [
+            {
+                "title": "Paper about GNNs", 
+                "summary": "Paper about GNNs"
+            },
+            {
+                "title": "Paper about medical things", 
+                "summary": "Paper about medical things"
+            }
         ]
     })
 
-    assert result == "['yes', 'no']"
+    expected = {"relevant_papers": [{"title": "Paper about GNNs", "summary": "Paper about GNNs"}]}
+
+    assert result == expected
     llm.invoke.assert_called_once()
 
 def test_relevance_tool_prompt_contains_inputs():
     llm = MagicMock(spec=LLM)
-    llm.invoke.return_value = "['yes']"
+    llm.invoke.return_value = MagicMock(content="['yes']")
 
     tool = RelevanceTool(llm=llm)
 
     tool.run({
         "user_query": "graph neural networks",
-        "summaries": ["Study of GNN architectures"]
+        "papers": [
+            {
+                "title": "Paper about GNNs", 
+                "summary": "Study of GNN architectures"
+            },
+        ]
     })
 
     prompt = llm.invoke.call_args[0][0]

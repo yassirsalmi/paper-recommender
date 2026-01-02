@@ -8,10 +8,10 @@ def test_rank_tool_scoring_threshold():
         {"title": "paper title 3", "upvote": 99}
     ]
 
-    expected_paper_after_ranking = [
+    expected_paper_after_ranking = {"ranked_papers": [
         {"title": "paper title 2", "upvote": 80},
         {"title": "paper title 3", "upvote": 99}
-    ]
+    ]}
 
     tool = RankTool()
 
@@ -28,7 +28,7 @@ def test_rank_tool_default_threshold():
         {"title": "paper title 2", "upvote": 80}
     ]
 
-    expected = [{"title": "paper title 2", "upvote": 80}]
+    expected = {"ranked_papers": [{"title": "paper title 2", "upvote": 80}]}
 
     tool = RankTool()
 
