@@ -12,5 +12,6 @@ venv/
 
 .env
 
-# test cache
+# test cache and code coverage
 .pytest_cache
+.coverage
