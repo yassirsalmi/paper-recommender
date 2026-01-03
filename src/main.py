@@ -4,6 +4,7 @@ from llm.llm import LLM
 from tools.tools import  summarize_papers
 from utils.logger import get_logger
 from agent.research_agent import ResearchAgent
+from agent.deep_dive_agent import DeepDiveAgent
 from tools.search_tools.hugging_face_search import HuggingFaceSearch
 from tools.search_tools.arxiv_search import ArxivSearch
 from tools.search_tools.semantic_scholar_search import SemanticScholarSearch
@@ -50,6 +51,18 @@ def main():
 
     print(result.content)
 
+    user_choice = input("is this enough, want a paper deep dive? type yes or no? ")
+
+    if user_choice == "yes":
+        # do deep dive 
+        agent = DeepDiveAgent(
+            llm=llm,
+            tools=tools
+        )
+        agent.run()
+        pass
+    else: 
+        exit(0)
 
 if __name__ == "__main__":
     logger = get_logger(__name__)
