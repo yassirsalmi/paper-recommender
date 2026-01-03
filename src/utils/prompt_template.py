@@ -34,6 +34,7 @@ TOOLS AND REQUIRED ARGUMENTS:
 
 paper_search:
 - args:
+  - search_query (string) → use "$user_query"
   - limit (int, optional)
 
 paper_relevance:

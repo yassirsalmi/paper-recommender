@@ -5,6 +5,8 @@ from tools.tools import  summarize_papers
 from utils.logger import get_logger
 from agent.research_agent import ResearchAgent
 from tools.search_tools.hugging_face_search import HuggingFaceSearch
+from tools.search_tools.arxiv_search import ArxivSearch
+from tools.search_tools.combined_search import CombinedPaperSearch
 from tools.rank_tools.rank_tool import RankTool
 from tools.rank_tools.relevance_tool import RelevanceTool
 
@@ -19,7 +21,10 @@ def main():
         temperature=os.getenv("LLM_TEMPERATURE")
     )
 
-    paper_search_tool = HuggingFaceSearch()
+    paper_search_tool = CombinedPaperSearch(
+        arxiv_tool=ArxivSearch(),
+        hf_tool=HuggingFaceSearch()
+    )
     paper_relevance_tool = RelevanceTool(llm=llm)
     paper_rank_tool = RankTool()
 
