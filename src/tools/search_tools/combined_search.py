@@ -14,11 +14,13 @@ class CombinedPaperSearch(SearchTool):
 
     _arxiv_tool: any = PrivateAttr()
     _hf_tool: any = PrivateAttr()
+    _semantic_scholar_tool: any = PrivateAttr()
 
-    def __init__(self, arxiv_tool, hf_tool, **kwargs):
+    def __init__(self, arxiv_tool, hf_tool, semantic_scholar_tool, **kwargs):
         super().__init__(**kwargs)
         self._arxiv_tool = arxiv_tool
         self._hf_tool = hf_tool
+        self._semantic_scholar_tool = semantic_scholar_tool
 
     def _run(self, search_query: str, limit: int = 10):
         arxiv_result = self._arxiv_tool.run({
@@ -30,7 +32,12 @@ class CombinedPaperSearch(SearchTool):
             "limit": limit
         })
 
+        semantic_scholar_result = self._semantic_scholar_tool.run({
+            "search_query": search_query,
+            "limit": limit
+        })
+
         return {
-            "search_papers": arxiv_result["papers"] + hf_result["papers"]
+            "search_papers": arxiv_result["papers"] + hf_result["papers"] + semantic_scholar_result["papers"]
         }
 
