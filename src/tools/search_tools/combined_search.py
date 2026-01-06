@@ -29,6 +29,7 @@ class CombinedPaperSearch(SearchTool):
         })
 
         hf_result = self._hf_tool.run({
+            "search_query": search_query,
             "limit": limit
         })
 

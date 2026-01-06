@@ -4,7 +4,7 @@ from typing import ClassVar, List, Type
 from pydantic import BaseModel, Field
 
 class SemanticScholarSearchArgs(BaseModel):
-    limit: int = Field(default=10, description="Maximum number of papers to fetch")
+    limit: int = Field(default=100, description="Maximum number of papers to fetch")
     search_query: str = Field(default= None, description="Keyword from the user query")
 
 class SemanticScholarSearch(SearchTool):
@@ -12,7 +12,7 @@ class SemanticScholarSearch(SearchTool):
     description: ClassVar[str] = "Fetches recent papers from SemanticScholar"
     args_schema: ClassVar[Type[BaseModel]] = SemanticScholarSearchArgs
 
-    def _run(self, search_query: str, limit: int = 10):
+    def _run(self, search_query: str, limit: int = 100):
         sch = SemanticScholar()
         papers = []
 
@@ -28,5 +28,4 @@ class SemanticScholarSearch(SearchTool):
                 }
             ]
             for paper in papers
-
             }
