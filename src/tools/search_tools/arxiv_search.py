@@ -23,7 +23,7 @@ class ArxivSearch(SearchTool):
             sort_by=arxiv.SortCriterion.SubmittedDate
         )
 
-        results = client.results(search)
+        results = list(client.results(search))
         
         return {
             "papers": [
