@@ -6,6 +6,7 @@ from utils.logger import get_logger
 from agent.research_agent import ResearchAgent
 from tools.search_tools.hugging_face_search import HuggingFaceSearch
 from tools.search_tools.arxiv_search import ArxivSearch
+from tools.search_tools.semantic_scholar_search import SemanticScholarSearch
 from tools.search_tools.combined_search import CombinedPaperSearch
 from tools.rank_tools.rank_tool import RankTool
 from tools.rank_tools.relevance_tool import RelevanceTool
@@ -23,8 +24,10 @@ def main():
 
     paper_search_tool = CombinedPaperSearch(
         arxiv_tool=ArxivSearch(),
-        hf_tool=HuggingFaceSearch()
+        hf_tool=HuggingFaceSearch(),
+        semantic_scholar_tool=SemanticScholarSearch()
     )
+
     paper_relevance_tool = RelevanceTool(llm=llm)
     paper_rank_tool = RankTool()
 

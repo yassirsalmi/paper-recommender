@@ -17,14 +17,14 @@ def test_rank_tool_scoring_threshold():
 
     result = tool.run({
         "papers": list_of_papers,
-        "threshold": 75
+        "rank_metric": 75
     })
 
     assert result == expected_paper_after_ranking
 
 def test_rank_tool_default_threshold():
     list_of_papers = [
-        {"title": "paper title 1", "upvote": 50},
+        {"title": "paper title 1", "upvote": 15},
         {"title": "paper title 2", "upvote": 80}
     ]
 

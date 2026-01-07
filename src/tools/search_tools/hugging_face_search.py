@@ -7,7 +7,8 @@ from pydantic import BaseModel, Field
 
 
 class HuggingFaceSearchArgs(BaseModel):
-    limit: int = Field(default=10, description="Maximum number of papers to fetch")
+    search_query: str = Field(description="the search query fron the user input")
+    limit: int = Field(default=100, description="Maximum number of papers to fetch")
 
 
 class HuggingFaceSearch(SearchTool):
@@ -15,7 +16,7 @@ class HuggingFaceSearch(SearchTool):
     description: ClassVar[str] = "Fetches recent papers from HuggingFace"
     args_schema: ClassVar[Type[BaseModel]] = HuggingFaceSearchArgs
 
-    def _run(self, limit: int = 10):
+    def _run(self, search_query: str, limit: int = 100):
         target_date = (date.today() - timedelta(days=7)).isoformat()
         papers = list_daily_papers(date=target_date)
 

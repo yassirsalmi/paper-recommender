@@ -6,7 +6,7 @@ import arxiv
 
 class ArxivSearchArgs(BaseModel):
     search_query: str = Field(description="the search query fron the user input")
-    limit: int = Field(default=10, description="Maximum number of papers to fetch")
+    limit: int = Field(default=100, description="Maximum number of papers to fetch")
 
 
 class ArxivSearch(SearchTool):
@@ -14,7 +14,7 @@ class ArxivSearch(SearchTool):
     description: ClassVar[str] = "Fetches papers from arxiv"
     args_schema: ClassVar[Type[BaseModel]] = ArxivSearchArgs
 
-    def _run(self, search_query: str, limit: int = 10):
+    def _run(self, search_query: str, limit: int = 100):
         client = arxiv.Client()
 
         search = arxiv.Search(
@@ -23,7 +23,7 @@ class ArxivSearch(SearchTool):
             sort_by=arxiv.SortCriterion.SubmittedDate
         )
 
-        results = client.results(search)
+        results = list(client.results(search))
         
         return {
             "papers": [
