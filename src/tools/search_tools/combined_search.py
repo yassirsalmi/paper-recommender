@@ -33,12 +33,14 @@ class CombinedPaperSearch(SearchTool):
             "limit": limit
         })
 
-        semantic_scholar_result = self._semantic_scholar_tool.run({
-            "search_query": search_query,
-            "limit": limit
-        })
+        #! removed semantic search due to error code 429: Too Many Requests.
+        #! check this for more: https://www.semanticscholar.org/product/api#api-key-form
+        # semantic_scholar_result = self._semantic_scholar_tool.run({
+        #     "search_query": search_query,
+        #     "limit": limit
+        # })
 
         return {
-            "search_papers": arxiv_result["papers"] + hf_result["papers"] + semantic_scholar_result["papers"]
+            "search_papers": arxiv_result["papers"] + hf_result["papers"]
         }
 
