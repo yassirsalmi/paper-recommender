@@ -29,7 +29,14 @@ class FetchTool(BaseTool):
         with open(file_path, "wb") as f:
             f.write(response.content)
 
-        return f"file saver to {Path.absolute(file_path)}"
+        return {
+            "status": "success",
+            "file_path": str(file_path.absolute()),
+        }
+
+
+    async def _arun(self, paper_identifier: str) -> str:
+        raise NotImplementedError("Use sync version")
 
 
     def _resolve_to_pdf(self, identifier: str) -> str:
@@ -37,7 +44,7 @@ class FetchTool(BaseTool):
             return identifier
         
         # arxiv identifier 
-        # arXiv:0**.****
+        # arXiv:YYMM.number
         if identifier.startswith("arxiv:") or identifier.replace(".", "").isdigit():
             arxiv_id = identifier.replace("arxiv:", "")
             paper_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
