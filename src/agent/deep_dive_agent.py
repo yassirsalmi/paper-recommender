@@ -24,9 +24,11 @@ class DeepDiveAgent:
 
         self.logger.info(f"Starting deep dive for: {paper_identifier}")
 
-        paper_content = self.download(paper_identifier)
-        sections = self.read_paper(paper_content)
-        explanation = self.explain(sections)
+        paper_info = self.download(paper_identifier)
+        if paper_info["status"] == "success":
+            paper_path = paper_info["file_path"]
+        paper = self.read_paper(paper_path)
+        explanation = self.explain(paper["content"])
 
         return {
             "paper": paper_identifier,
@@ -34,22 +36,26 @@ class DeepDiveAgent:
         }
 
     def download(self, paper_identifier: str) -> str:
+        # NOTE: since the hf/arxiv api don't provide a way to have extract the content of the paper
+        # Downloading the paper to local machine and extracting the content will be the best solution
+        # submiting the full content to an llm can be challeging but will try this first
         self.logger.info("Downloading paper content")
 
         fetch_tool = self.tools.get("paper_fetcher")
         if not fetch_tool:
             raise ValueError("paper_fetcher is not a registered tool")
 
-        return fetch_tool(paper_identifier)
+        # returns a dict with the file_path
+        return fetch_tool.invoke({"paper_identifier": paper_identifier})
 
-    def read_paper(self, paper_content: str) -> Dict[str, str]:
+    def read_paper(self, path_to_paper: str) -> Dict[str, str]:
         self.logger.info("Extracting paper sections")
 
-        extractor = self.tools.get("section_extractor")
-        if not extractor:
+        section_extractor = self.tools.get("section_extractor")
+        if not section_extractor:
             raise ValueError("section_extractor is not a registered tool")
 
-        return extractor(paper_content)
+        return section_extractor.invoke({"path_to_paper": path_to_paper})
 
     def explain(self, sections: Dict[str, str]) -> Dict[str, str]:
         """
