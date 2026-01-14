@@ -1,4 +1,4 @@
-
+import json
 
 def func_judgemental_prompt(user_query, available_tools, plan):
     return f"""
@@ -88,4 +88,24 @@ Here are the research findings:
 
 Provide a concise list of recommended papers and
 explain why each is relevant.
+"""
+
+def _build_explanation_prompt(sections):
+        """
+        Build a structured explanation prompt for the LLM.
+        """
+
+        return f"""
+You are a research assistant.
+
+Explain the following paper clearly and concisely.
+
+Focus on:
+- Main contributions
+- Core method
+- How it impacts LLM inference
+- Limitations
+
+Paper sections:
+{json.dumps(sections, indent=2)}
 """
