@@ -1,4 +1,4 @@
-
+import json
 
 def func_judgemental_prompt(user_query, available_tools, plan):
     return f"""

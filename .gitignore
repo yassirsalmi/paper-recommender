@@ -15,3 +15,6 @@ venv/
 # test cache and code coverage
 .pytest_cache
 .coverage
+
+#papers
+src/papers/*
