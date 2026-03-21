@@ -18,7 +18,7 @@ please provide your feedback on a scale for 0 to 10 don't add anything else to y
 """
 
 
-def func_planning_prompt(user_query, tools_list):
+def func_planning_prompt(user_query, tools_schema):
     return f"""
 You are a research planning agent.
 
@@ -28,51 +28,26 @@ User query:
 "{user_query}"
 
 Available tools:
-{tools_list}
+{tools_schema}
 
-TOOLS AND REQUIRED ARGUMENTS:
-
-paper_search:
-- args:
-  - search_query (string) → use "$user_query"
-  - limit (int, optional)
-
-paper_relevance:
-- args:
-  - user_query (string) → use "$user_query"
-  - papers (list) → use "$papers"
-
-paper_ranker:
-- args:
-  - papers (list) → use "$relevant_papers"
-
-paper_summarizer:
-- args:
-  - papers (list) → use "$ranked_papers"
+STATE REFERENCES:
+- Each tool writes its output into a shared state under a key (shown as "writes to state: $key")
+- To use a previous tool's output as an arg, reference it with a "$" prefix: e.g. "$papers"
+- "$user_query" always refers to the original user query
 
 MANDATORY RULES:
-1. The plan MUST start with "paper_search".
-2. The plan MUST include "paper_relevance" immediately AFTER "paper_search".
-3. The plan MUST NOT include "paper_ranker" or "paper_summarizer" BEFORE "paper_relevance".
-4. Any plan that does not include "paper_relevance" is INVALID.
-5. Use each tool at most once.
-6. Steps must be in a logical execution order.
+1. Steps must be in logical execution order.
+2. Args that reference prior outputs MUST use $variable syntax, not placeholders like [papers].
 
 OUTPUT FORMAT:
-- Return JSON only.
-- The JSON must follow this schema exactly:
+Return JSON only, following this schema exactly:
 {{
     "steps": [
-        {{"action": "action_name_1", "tool": "tool_name_1", "args": {{}}}},
-        {{"action": "action_name_2", "tool": "tool_name_2", "args": {{}}}},
-        {{"action": "action_name_3", "tool": "tool_name_3", "args": {{}}}}
+        {{"action": "action_name", "tool": "tool_name", "args": {{"arg1": "$state_var", "arg2": "literal_value"}}}}
     ]
 }}
 
-IMPORTANT:
-- Do NOT include explanations.
-- Do NOT include markdown.
-- Return ONLY valid JSON.
+IMPORTANT: Return ONLY valid JSON. No markdown, no explanation.
 """
 
 
