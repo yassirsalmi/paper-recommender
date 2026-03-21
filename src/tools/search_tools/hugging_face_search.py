@@ -21,7 +21,7 @@ class HuggingFaceSearch(SearchTool):
         papers = list_daily_papers(date=target_date)
 
         return {
-            "papers": [
+            "paper_search_results": [
                 {
                     "title": paper.title,
                     "authors": paper.authors,
