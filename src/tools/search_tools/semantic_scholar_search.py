@@ -19,13 +19,13 @@ class SemanticScholarSearch(SearchTool):
         papers.extend(sch.search_paper(search_query)[:limit])
 
         return {
-            "papers": [
+            "paper_search_results": [
                 {
                     "title": paper.title,
                     "summary": paper.abstract, # using abstract instead of summary will fix later
                     # "summary": paper.summary, #! 'Paper' object has no attribute 'summary' need to check this 
 
                 }
+                for paper in papers
             ]
-            for paper in papers
             }

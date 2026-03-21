@@ -41,6 +41,6 @@ class CombinedPaperSearch(SearchTool):
         # })
 
         return {
-            "search_papers": arxiv_result["papers"] + hf_result["papers"]
+            "papers": arxiv_result["paper_search_results"] + hf_result["paper_search_results"]
         }
 

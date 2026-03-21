@@ -19,7 +19,7 @@ class ResearchAgent():
     def run(self, user_query: str) -> str:
         """
         Generate plan with up to 3 retries
-        the 3rd attempt continue the execution even when the judge LLM give a weak score
+        the 3rd attempt continue the execution even when the judge LLM give a low score
         """
         max_attempts = 3
         plan = None
@@ -55,11 +55,15 @@ class ResearchAgent():
         return response
     
     def plan(self, user_query: str, tools: Dict[str, Any]) -> Dict[str, Any]:
-        tools_list = ", ".join(tools.keys())
 
-        planning_prompt = func_planning_prompt(user_query=user_query,
-                                               tools_list=tools_list)
-        
+        from utils.tool_schema import render_tool_schemas
+        tools_schema = render_tool_schemas(tools)
+        planning_prompt = func_planning_prompt(user_query=user_query, tools_schema=tools_schema)
+
+        # print(f"-------------------------")
+        # print(planning_prompt)
+        # print(f"-------------------------")
+
         ai_message = self.llm.invoke(planning_prompt)
         plan_text = ai_message.content.strip()
 
@@ -88,61 +92,18 @@ class ResearchAgent():
 
         return score
 
-    def _execute(self, plan: Dict[str, Any], user_query: str) -> Dict[str, Any]:
-        # TODO: tool calls are hardcoded in here need to find a better way to do it
-        #! need to clean up this and do this in a better way since a lot of errors raises
-        state = {}
-
-        for step in plan["steps"]:
-            tool_name = step["tool"]
-            action = step["action"]
-
-            if tool_name not in self.tools:
-                raise KeyError(f"Unknown tool: {tool_name}")
-
-            tool = self.tools[tool_name]
-
-            if "search" in action:
-                state["papers"] = tool.invoke(step.get("args", {}))
-            
-            elif "rank" in action:
-                papers_to_rank = state.get("ranked_relevant_papers", state.get("papers"))
-                if papers_to_rank is None:
-                    raise RuntimeError("Cannot rank without papers")
-                state["ranked_papers"] = tool.invoke({"papers": papers_to_rank, "threshold": 75})
-
-            elif tool_name == "paper_relevance":
-                if "papers" not in state:
-                    raise RuntimeError("Cannot filter relevance without papers")
-
-                summaries = [paper["summary"] for paper in state["papers"]]
-
-                relevance_decisions = tool.invoke({
-                    "user_query": user_query,
-                    "summaries": summaries
-                })
-
-                state["ranked_relevant_papers"] = [
-                    paper for paper, decision in zip(state["papers"], relevance_decisions)
-                    if str(decision[0] if isinstance(decision, tuple) else decision).lower() == "yes"
-                ]
-
-            elif "summarize" in action:
-                if "ranked_papers" not in state:
-                    raise RuntimeError("Cannot summarize without ranked papers")
-                state["summaries"] = tool.invoke({"papers": state["ranked_papers"]})
-
-            else:
-                raise ValueError(f"Unknown action: {action}")
-
-        return state
 
     def execute(self, plan: Dict[str, Any], user_query: str) -> Dict[str, Any]:
         state = {"user_query": user_query}
 
         for step in plan["steps"]:
             action_name = step["action"]
-            tool_name = step["tool"]
+            tool_name   = step["tool"]
+
+            print(f"\n--- --- --- --- ---")
+            print(f"\n--- Step: {action_name} | Tool: {tool_name} ---")
+            print(f"\n--- --- --- --- ---")
+            print(f"State keys before: {list(state.keys())}")
 
             if tool_name not in self.tools:
                 raise KeyError(f"Unknown tool: {tool_name}")
@@ -150,17 +111,22 @@ class ResearchAgent():
             tool = self.tools[tool_name]
 
             raw_args = step.get("args", {})
+            print(f"Raw args: {raw_args}")
+
             resolved_args = resolve_args(raw_args, state)
+            print(f"Resolved args keys: {list(resolved_args.keys())}")
+
             validate_required_args(tool, resolved_args)
             tool_output = tool.invoke(resolved_args)
 
+            print(f"Tool output type: {type(tool_output)}")
+            print(f"Tool output keys: {list(tool_output.keys()) if isinstance(tool_output, dict) else 'NOT A DICT'}")
 
             if not isinstance(tool_output, dict):
-                raise TypeError(
-                    f"Tool {tool_name} must return a dict, got {type(tool_output)}"
-                )
+                raise TypeError(f"Tool {tool_name} must return a dict, got {type(tool_output)}")
 
             state.update(tool_output)
+            print(f"State keys after: {list(state.keys())}")
 
         return state
 
