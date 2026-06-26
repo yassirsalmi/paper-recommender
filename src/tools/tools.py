@@ -7,18 +7,22 @@ from langchain.tools import tool
         "summarize_papers",
         description="provide a brief summary from the retrived summary of the paper from the API"
 )
-def summarize_papers(papers):
+def summarize_papers(papers, max_papers: int = 5):
     """
     Summarize a list of research papers and explain their relevance.
 
     Input:
     - papers: list of ranked paper objects
+    - max_papers: maximum number of papers to summarize (default 10)
 
     Output:
     - list of short human-readable summaries
     """
+    truncated = papers[:max_papers]
     return {
         "summaries": [
-                f"{p['title']}: relevant because {p['summary'][:50]}..." for p in papers
+                f"{p['title']}: relevant because {p['summary'][:50]}..." for p in truncated
             ]
     }
+
+object.__setattr__(summarize_papers, "output_key", "summaries")
