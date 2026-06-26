@@ -16,6 +16,7 @@ class RelevanceTool(BaseTool):
     name: ClassVar[str] = "paper_relevance"
     description: ClassVar[str] = "Filters papers by relevance"
     args_schema: ClassVar[Type[BaseModel]] = RelevanceToolArgs
+    output_key: str = "relevant_papers"
 
     _llm: LLM = PrivateAttr()
 
@@ -43,7 +44,22 @@ Paper summaries:
         result = self._llm.invoke(prompt)
 
         try:
-            decisions = ast.literal_eval(result.content)
+            # Extract the first Python list from the output (handles stray text)
+            text = result.content.strip()
+            start = text.find("[")
+            if start == -1:
+                raise ValueError("No list found")
+            depth = 0
+            for i in range(start, len(text)):
+                if text[i] == "[":
+                    depth += 1
+                elif text[i] == "]":
+                    depth -= 1
+                    if depth == 0:
+                        decisions = ast.literal_eval(text[start:i+1])
+                        break
+            else:
+                raise ValueError("Unmatched brackets")
         except Exception:
             raise ValueError("Failed to parse relevance output")
 

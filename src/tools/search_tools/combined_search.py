@@ -11,6 +11,7 @@ class CombinedPaperSearch(SearchTool):
     name: ClassVar[str] = "fetch_articles_from_all_sources"
     description: ClassVar[str] = "Fetches papers from both Arxiv and HuggingFace"
     args_schema: ClassVar[Type[BaseModel]] = CombinedSearchArgs
+    output_key: str = "papers"
 
     _arxiv_tool: any = PrivateAttr()
     _hf_tool: any = PrivateAttr()
