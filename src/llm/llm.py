@@ -7,7 +7,7 @@ class LLM(ChatOpenAI):
         base_url: str,
         api_key: str,
         temperature: float = 0.5,
-        max_tokens: int = 500,
+        max_tokens: int = 4096,
     ):
         super().__init__(
             model=model,

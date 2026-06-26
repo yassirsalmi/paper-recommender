@@ -1,17 +1,35 @@
+import json
 import re
 
-def extract_json_from_markdown(text: str) -> dict:
+def extract_json_from_markdown(text: str) -> str:
     """
-    Extract JSON from a string
+    Extract the first complete JSON object from a string.
+    Handles markdown code blocks and stray text before/after.
     """
-    text = re.sub(r"^```json\s*", "", text.strip())
-    text = re.sub(r"```$", "", text.strip())
+    text = text.strip()
 
-    match = re.search(r"\{.*\}", text, re.DOTALL)
-    if not match:
+    # Try extracting from a ```json ... ``` block first
+    code_match = re.search(r"```(?:json)?\s*\n?(.*?)```", text, re.DOTALL)
+    if code_match:
+        candidate = code_match.group(1).strip()
+    else:
+        candidate = text
+
+    # Find the first '{' and track brace depth to get the complete object
+    start = candidate.find("{")
+    if start == -1:
         raise ValueError(f"No JSON found in LLM output:\n{text}")
 
-    return match.group()
+    depth = 0
+    for i in range(start, len(candidate)):
+        if candidate[i] == "{":
+            depth += 1
+        elif candidate[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return candidate[start:i+1]
+
+    raise ValueError(f"Unmatched braces in LLM output:\n{text}")
 
 
 def resolve_args(args: dict, state: dict) -> dict:
