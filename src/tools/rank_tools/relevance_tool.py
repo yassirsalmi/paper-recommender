@@ -24,7 +24,9 @@ class RelevanceTool(BaseTool):
         super().__init__()
         self._llm = llm
 
-    def _run(self, user_query: str, papers: List[Dict[str, Any]]):
+    def _run(self, user_query: str, papers: List[Dict[str, Any]], max_papers: int = 30):
+        # Limit papers to avoid overwhelming the LLM
+        papers = papers[:max_papers]
         summaries = [paper["summary"] for paper in papers]
 
         prompt = f"""
@@ -48,7 +50,7 @@ Paper summaries:
             text = result.content.strip()
             start = text.find("[")
             if start == -1:
-                raise ValueError("No list found")
+                raise ValueError(f"No list found in:\n{text[:500]}")
             depth = 0
             for i in range(start, len(text)):
                 if text[i] == "[":
