@@ -3,6 +3,7 @@ from langchain.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
 from llm.llm import LLM
 import ast
+import re
 
 class RelevanceToolArgs(BaseModel):
     user_query: str = Field(description="User query")
@@ -46,28 +47,21 @@ Paper summaries:
         result = self._llm.invoke(prompt)
 
         try:
-            # Extract the first Python list from the output (handles stray text)
             text = result.content.strip()
-            start = text.find("[")
-            if start == -1:
-                raise ValueError(f"No list found in:\n{text[:500]}")
-            depth = 0
-            for i in range(start, len(text)):
-                if text[i] == "[":
-                    depth += 1
-                elif text[i] == "]":
-                    depth -= 1
-                    if depth == 0:
-                        decisions = ast.literal_eval(text[start:i+1])
-                        break
-            else:
-                raise ValueError("Unmatched brackets")
+            # Find a list that looks like ["yes", "no", ...] or [1, 0, ...]
+            match = re.search(r"""\[(?:\s*"(?:yes|no)"\s*,?\s*)+\]""", text, re.IGNORECASE)
+            if not match:
+                match = re.search(r"""\[[\s,\d]+\]""", text)
+            if not match:
+                raise ValueError(f"No decision list found in:\n{text[:500]}")
+            decisions = ast.literal_eval(match.group())
         except Exception:
             raise ValueError("Failed to parse relevance output")
 
         relevant_papers = [
             paper for paper, decision in zip(papers, decisions)
-            if decision.lower() == "yes"
+            if (isinstance(decision, str) and decision.lower() == "yes")
+            or (isinstance(decision, (int, float)) and decision == 1)
         ]
 
         return {

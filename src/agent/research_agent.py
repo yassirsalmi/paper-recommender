@@ -26,10 +26,13 @@ class ResearchAgent():
         judge_result = -1
         
         for attempt in range(1, max_attempts + 1):  
-            plan = self.plan(user_query=user_query, tools=self.tools)
-
-            # validation before judge
-            # plan = Plan.model_validate_json(str(plan))
+            try:
+                plan = self.plan(user_query=user_query, tools=self.tools)
+            except (json.JSONDecodeError, ValueError) as e:
+                print(f"Attempt {attempt} - plan generation failed: {e}")
+                if attempt == max_attempts:
+                    raise
+                continue
 
             judge_result = self.judge_generated_plan(
                 user_query=user_query, 
@@ -96,9 +99,13 @@ class ResearchAgent():
     def execute(self, plan: Dict[str, Any], user_query: str) -> Dict[str, Any]:
         state = {"user_query": user_query}
 
-        for step in plan["steps"]:
-            action_name = step["action"]
-            tool_name   = step["tool"]
+        steps = plan.get("steps")
+        if steps is None:
+            steps = [plan]
+
+        for step in steps:
+            action_name = step.get("action", "unknown")
+            tool_name   = step.get("tool", step.get("action", "unknown"))
 
             print(f"\n--- --- --- --- ---")
             print(f"\n--- Step: {action_name} | Tool: {tool_name} ---")
