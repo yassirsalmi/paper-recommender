@@ -48,8 +48,8 @@ Paper summaries:
 
         try:
             text = result.content.strip()
-            # Find a list that looks like ["yes", "no", ...] or [1, 0, ...]
-            match = re.search(r"""\[(?:\s*"(?:yes|no)"\s*,?\s*)+\]""", text, re.IGNORECASE)
+            # Find a list that looks like ["yes", "no", ...], ['yes', 'no', ...] or [1, 0, ...]
+            match = re.search(r"""\[(?:\s*["'](?:yes|no)["']\s*,?\s*)+\]""", text, re.IGNORECASE)
             if not match:
                 match = re.search(r"""\[[\s,\d]+\]""", text)
             if not match:
