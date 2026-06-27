@@ -17,4 +17,4 @@ __pycache__/
 .coverage
 
 #papers
-src/papers/*
+papers/*
